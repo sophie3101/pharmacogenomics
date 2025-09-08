@@ -1,0 +1,1 @@
+check if genes in genes table is unique
