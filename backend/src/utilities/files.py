@@ -26,7 +26,7 @@ def download_file_from_link(url, des_folder):
      None
   """
   try:
-    print(url, des_folder)
+    # print(url, des_folder)
     headers = {
     'User-Agent':"Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
     }
@@ -36,6 +36,6 @@ def download_file_from_link(url, des_folder):
       zip_file.extractall(des_folder)
       logger.info("ZIP file downloaded and extracted successfully.")
       return True
-  except:
-    logger.error(f"Error in downloading the link {url}")
+  except Exception as e:
+    logger.error(f"Error in downloading the link {url}, {e}")
     raise

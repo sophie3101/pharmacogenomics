@@ -3,7 +3,6 @@ from psycopg2 import sql
 import pandas as pd 
 
 logger = logging.getLogger(__name__)
-
 class DatabaseHandler():
     def __init__(self, database_name, username, password, host, port) :
         try:
@@ -64,6 +63,7 @@ class DatabaseHandler():
             CREATE TABLE IF NOT EXISTS  {schema_name}.{table_name} 
             ({column_schema})
         """
+        # print(create_table_sql)
         self.cursor.execute(create_table_sql)
 
     def has_table(self, table_name, schema_name):
@@ -81,7 +81,7 @@ class DatabaseHandler():
         except Exception as e:
             logger.error(f"Error creating schema: {e}")
 
-    def file_to_staging_table(self, in_file, schema_name, table_name):
+    def file_to_table(self, in_file, schema_name, table_name):
         """
             Import CSV file into database
             Parameters:
@@ -94,28 +94,23 @@ class DatabaseHandler():
                 Exception: If reading from the database or writing to the file fails.
             """
         try:
-            if not self.has_schema(schema_name):
-                self.create_schema(schema_name)
-            if not self.has_table(table_name, schema_name):
-                self.create_staging_table_schema(in_file, schema_name, table_name)
+            root, extension = os.path.splitext(in_file)
+            if extension.strip()==".tsv":
+                sep_=sql.Literal('\t')
             
-                root, extension = os.path.splitext(in_file)
-                if extension.strip()==".tsv":
-                    sep_=sql.Literal('\t')
-                
-                if extension==".csv":
-                    sep_=sql.Literal(',')
+            if extension==".csv":
+                sep_=sql.Literal(',')
 
-                with open(in_file, 'r') as fh:
-                    query = sql.SQL(
-                                "COPY {schema_name}.{table} FROM STDIN WITH CSV HEADER DELIMITER {delimiter}"
-                            ).format(
-                                schema_name=sql.Identifier(schema_name),
-                                table=sql.Identifier(table_name),
-                                delimiter=sep_
-                            )
-                    # print(query)
-                    self.cursor.copy_expert(query, fh)
+            with open(in_file, 'r') as fh:
+                query = sql.SQL(
+                        "COPY {schema_name}.{table} FROM STDIN WITH CSV HEADER DELIMITER {delimiter}"
+                    ).format(
+                        schema_name=sql.Identifier(schema_name),
+                        table=sql.Identifier(table_name),
+                        delimiter=sep_
+                    )
+                # print(query)
+                self.cursor.copy_expert(query, fh)
       
         except Exception as e:
             logger.error(e)
