@@ -1,4 +1,4 @@
-import requests, zipfile, io, logging, glob, os
+import requests, zipfile, io, logging, glob, os, gzip, shutil
 import pandas as pd 
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ def tsv_to_csv(in_file):
   df = pd.read_csv(in_file, sep="\t")
   df.to_csv(out_file, index=False)
 
-def download_file_from_link(url, des_folder):
+def download_file_from_link(url, output):
   """
     This function is to download zip folder from link {url} to {des_folder}
     and the compressed link is extracted to {des_fodler}
@@ -26,16 +26,31 @@ def download_file_from_link(url, des_folder):
      None
   """
   try:
-    # print(url, des_folder)
     headers = {
     'User-Agent':"Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
     }
     response = requests.get(url, stream=True, headers=headers)
     response.raise_for_status()
     with zipfile.ZipFile(io.BytesIO(response.content)) as zip_file:
-      zip_file.extractall(des_folder)
+      zip_file.extractall(output)
       logger.info("ZIP file downloaded and extracted successfully.")
       return True
   except Exception as e:
     logger.error(f"Error in downloading the link {url}, {e}")
     raise
+
+def download_gz_file(url):
+  try:
+    headers = {
+    'User-Agent':"Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+    response = requests.get(url)
+    response.raise_for_status()
+    with gzip.GzipFile(fileobj=io.BytesIO(response.content)) as f_in: #io.BytesIO 
+      decompressed_data = f_in.read()  # uncompressed byte object
+    
+    return decompressed_data
+  except Exception as e:
+    logger.error(f"Error in downloading the link {url}, {e}")
+    raise
+
