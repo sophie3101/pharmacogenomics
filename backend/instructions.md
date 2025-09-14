@@ -28,3 +28,6 @@ genes table: from https://api.clinpgx.org/v1/download/file/data/genes.zip
 note: i found out the the cpic github has released a full database sql file : 
 https://github.com/cpicpgx/cpic-data/releases (looking for Full DB export available)
 on sep 8, the recent one is https://files.cpicpgx.org/data/database/cpic_db_dump-v1.51.0.sql.gz
+
+
+psql -h localhost -p 5433 -U root -d pgx < cpic_db_dump-v1.50.0.sql
